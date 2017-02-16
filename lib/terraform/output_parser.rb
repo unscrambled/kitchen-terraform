@@ -20,12 +20,9 @@ require 'terraform/deprecated_output_parser'
 module Terraform
   # A parser for output command values
   class OutputParser
-    def self.create(output:, version:)
-      version.if_json_not_supported do
-        return ::Terraform::DeprecatedOutputParser.new output: output
-      end
-
-      new output: output
+    def self.create(json_supported:, output:)
+      json_supported and new(output: output) or
+        ::Terraform::DeprecatedOutputParser.new(output: output)
     end
 
     def each_name(&block)

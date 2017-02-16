@@ -14,75 +14,91 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'terraform/command_factory'
+require 'terraform/client/operation/base'
+require 'terraform/client/operation/apply'
+require 'terraform/client/operation/get'
+require 'terraform/client/operation/output'
+require 'terraform/client/operation/plan'
+require 'terraform/client/operation/show'
+require 'terraform/client/operation/validate'
+require 'terraform/client/operation/version'
+require 'terraform/deprecated_output_parser'
 require 'terraform/output_parser'
-require 'terraform/shell_out'
 require 'terraform/version'
 
 module Terraform
   # Client to execute commands
   class Client
-    def apply_constructively
-      apply plan_command: factory.plan_command
-    end
-
-    def apply_destructively
-      apply plan_command: factory.destructive_plan_command
+    def apply
+      ::Terraform::Client::Operation::Apply
+        .call var: config[:variables], var_file: config[:variable_files],
+              **config
     end
 
     def each_output_name(&block)
       output_parser(name: '').each_name(&block)
     end
 
+    def get
+      ::Terraform::Client::Operation::Get.call dir: config[:directory]
+    end
+
     def iterate_output(name:, &block)
       output_parser(name: name).iterate_parsed_output(&block)
     end
 
-    def load_state(&block)
-      execute(command: factory.show_command) do |state|
-        /\w+/.match state, &block
-      end
+    def load_state
+      ::Terraform::Client::Operation::Show
+        .call(**config)['result.execute.stdout'].empty? || yield
     end
 
     def output(name:)
       output_parser(name: name).parsed_output
     end
 
+    def plan(destroy:)
+      ::Terraform::Client::Operation::Plan
+        .call destroy: destroy, dir: config[:directory],
+              out: config[:plan], var: config[:variables],
+              var_file: config[:variable_files], **config
+    end
+
+    def plan_and_apply(destroy: false)
+      validate
+      get
+      plan destroy: destroy
+      apply
+    end
+
+    def validate
+      ::Terraform::Client::Operation::Validate.call dir: config[:directory]
+    end
+
     def version
-      execute command: factory.version_command do |value|
-        return ::Terraform::Version.create value: value
-      end
+      @version ||=
+        ::Terraform::Version.create value: ::Terraform::Client::Operation::Version.call
     end
 
     private
 
-    attr_accessor :apply_timeout, :factory, :logger
+    attr_accessor :config
 
-    def apply(plan_command:)
-      execute command: factory.validate_command
-      execute command: factory.get_command
-      execute command: plan_command
-      ::Terraform::ShellOut.new(
-        command: factory.apply_command, logger: logger, timeout: apply_timeout
-      ).execute
+    def initialize(config: {})
+      self.config = config
+      ::Terraform::Client::Operation::Base['execute.logger'] = logger
     end
 
-    def execute(command:, &block)
-      ::Terraform::ShellOut
-        .new(command: command, logger: logger).execute(&block)
-    end
-
-    def initialize(config: {}, logger:)
-      self.apply_timeout = config[:apply_timeout]
-      self.factory = ::Terraform::CommandFactory.new config: config
-      self.logger = logger
+    def load_output(name:)
+      yield ::Terraform::Client::Operation::Output.call(
+        json: version.json_supported?, name: name, **config
+      )['result.execute.stdout']
     end
 
     def output_parser(name:)
-      execute(
-        command: factory.output_command(target: name, version: version)
-      ) do |value|
-        return ::Terraform::OutputParser.create output: value, version: version
+      load_output name: name do |output|
+        version.json_supported? and
+          return ::Terraform::OutputParser.new output: output or
+          return ::Terraform::DeprecatedOutputParser.new output: output
       end
     end
   end

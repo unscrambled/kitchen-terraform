@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  File: README
+  
+    &mdash; Documentation by YARD 0.9.5
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  pathId = "README";
+  relpath = '';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="class_list.html"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: README</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <iframe id="search_frame" src="class_list.html"></iframe>
+
+      <div id="content"><div id='filecontents'>
+<h1 id="label-kitchen-terraform">kitchen-terraform</h1>
+
+<p>kitchen-terraform is a set of <a href="http://kitchen.ci/index.html">Test
+Kitchen</a> plugins for testing <a
+href="https://www.terraform.io/docs/configuration/index.html">Terraform
+configuration</a>.</p>
+
+<h2 id="label-Requirements">Requirements</h2>
+<ul><li>
+<p><a href="https://www.ruby-lang.org/en/index.html">Ruby</a> <strong>(~&gt;
+2.3)</strong></p>
+</li><li>
+<p><a href="https://bundler.io/index.html">Bundler</a> <strong>(~&gt;
+1.12)</strong></p>
+</li><li>
+<p><a href="https://www.terraform.io/index.html">Terraform</a> <strong>(&gt;=
+0.6, &lt; 0.8)</strong></p>
+</li></ul>
+
+<h2 id="label-Installation">Installation</h2>
+
+<p>kitchen-terraform is packaged as a cryptographically signed [Ruby gem]
+which means it can be <a
+href="https://bundler.io/index.html#getting-started">installed with
+Bundler</a>.</p>
+
+<h3 id="label-Adding+kitchen-terraform+to+a+Terraform+project">Adding kitchen-terraform to a Terraform project</h3>
+
+<p>Once Bundler is installed, add kitchen-terraform to the project&#39;s
+Gemfile:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_source'>source</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>https://rubygems.org</span><span class='tstring_end'>&#39;</span></span>
+
+<span class='id identifier rubyid_gem'>gem</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>kitchen-terraform</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>~&gt; 0.1</span><span class='tstring_end'>&#39;</span></span>
+</code></pre>
+
+<p>Then, use Bundler to install the gems:</p>
+
+<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_bundle'>bundle</span> <span class='id identifier rubyid_install'>install</span>
+</code></pre>
+
+<h2 id="label-Usage">Usage</h2>
+
+<p>The provided plugins must all be used together in the <a
+href="https://docs.chef.io/config_yml_kitchen.html">Test Kitchen
+configuration</a> in order to successfully test the provided Terraform
+configuration.</p>
+
+<p>Refer to <a href="examples/getting_started/README.md">Getting Started
+Readme</a> for a detailed walkthrough of setting up and using
+kitchen-terraform.</p>
+
+<p>Refer to the <a href="examples/">examples directory</a> for a detailed
+example project.</p>
+
+<h2 id="label-Plugins">Plugins</h2>
+
+<h3 id="label-Driver">Driver</h3>
+
+<p>The <a href="lib/kitchen/driver/terraform.rb">driver</a> is a wrapper
+around the <a
+href="https://www.terraform.io/docs/commands/index.html">Terraform
+command-line interface</a>. It is responsible for enforcing Terraform
+version support and works with the provisioner to manage the <a
+href="https://www.terraform.io/docs/state/index.html">Terraform state</a>.</p>
+
+<p><span class='object_link'><a href="Kitchen/Driver/Terraform.html" title="Kitchen::Driver::Terraform (class)">Kitchen::Driver::Terraform</a></span></p>
+
+<h4 id="label-Actions">Actions</h4>
+
+<h5 id="label-kitchen+create">kitchen create</h5>
+
+<p>The driver ensures that the parent directories of the plan and state files
+exist.</p>
+
+<h5 id="label-kitchen+destroy">kitchen destroy</h5>
+
+<p>The driver applies a destructive <a
+href="https://www.terraform.io/docs/commands/plan.html">Terraform plan</a>
+to the Terraform state based on the Terraform configuration provided to the
+provisioner.</p>
+
+<h4 id="label-Configuration">Configuration</h4>
+
+<p>There are no configuration options for the driver.</p>
+
+<h5 id="label-Example+.kitchen.yml">Example .kitchen.yml</h5>
+
+<pre class="code ruby"><code class="ruby">---
+driver:
+  name: terraform</code></pre>
+
+<h3 id="label-Provisioner">Provisioner</h3>
+
+<p>The <a href="lib/kitchen/provisioner/terraform.rb">provisioner</a> is the
+bridge between Terraform and Test Kitchen. It is responsible for managing
+the Test Kitchen configuration options related to the Terraform
+configuration and works with the driver to manage the Terraform state.</p>
+
+<h4 id="label-Actions">Actions</h4>
+
+<h5 id="label-kitchen+converge">kitchen converge</h5>
+
+<p>The provisioner uses the driver to apply a constructive Terraform plan to
+the Terraform state based on the provided Terraform configuration.</p>
+
+<h4 id="label-Configuration">Configuration</h4>
+
+<h5 id="label-apply_timeout">apply_timeout</h5>
+
+<p>The number of seconds to wait for the Terraform <code>apply</code> command
+to be successful before raising an error.</p>
+
+<h6 id="label-Example+.kitchen.yml">Example .kitchen.yml</h6>
+
+<pre class="code ruby"><code class="ruby">---
+provisioner:
+  name: terraform
+  apply_timeout: 1000</code></pre>
+
+<h6 id="label-Default">Default</h6>
+
+<p>The default <code>apply_timeout</code> is 600 seconds.</p>
+
+<h5 id="label-color">color</h5>
+
+<p>Enable or disable colored output from the Terraform command.</p>
+
+<h6 id="label-Example+.kitchen.yml">Example .kitchen.yml</h6>
+
+<pre class="code ruby"><code class="ruby">---
+provisioner:
+  name: terraform
+  color: false</code></pre>
+
+<h6 id="label-Default">Default</h6>
+
+<p>The default value for <code>color</code> is true.</p>
+
+<h5 id="label-directory">directory</h5>
+
+<p>The pathname of the directory containing the Terraform configuration to be
+tested; corresponds to the <a
+href="https://www.terraform.io/docs/configuration/load.html">directory
+specified</a> in several Terraform commands.</p>
+
+<h6 id="label-Example+.kitchen.yml">Example .kitchen.yml</h6>
+
+<pre class="code ruby"><code class="ruby">---
+provisioner:
+  name: terraform
+  directory: directory/containing/terraform/configuration</code></pre>
+
+<h6 id="label-Default">Default</h6>
+
+<p>The default <code>directory</code> is the current working directory of Test
+Kitchen.</p>
+
+<h5 id="label-variable_files">variable_files</h5>
+
+<p>A collection of pathnames of <a
+href="https://www.terraform.io/docs/configuration/variables.html#variable-files">Terraform
+variable files</a> to be evaluated for the configuration.</p>
+
+<h6 id="label-Example+.kitchen.yml">Example .kitchen.yml</h6>
+
+<pre class="code ruby"><code class="ruby">---
+provisioner:
+  name: terraform
+  variable_files:
+    - first/terraform/variable/file
+    - second/terraform/variable/file
+---
+provisioner:
+  name: terraform
+  variable_files: a/terraform/variable/file</code></pre>
+
+<h6 id="label-Default">Default</h6>
+
+<p>The default <code>variable_files</code> collection is empty.</p>
+
+<h5 id="label-variables">variables</h5>
+
+<p>A mapping of <a
+href="https://www.terraform.io/docs/configuration/variables.html">Terraform
+variables</a> to be set in the configuration.</p>
+
+<h6 id="label-Example+.kitchen.yml">Example .kitchen.yml</h6>
+
+<pre class="code ruby"><code class="ruby">---
+provisioner:
+  name: terraform
+  variables:
+    foo: bar
+# deprecated
+---
+provisioner:
+  name: terraform
+  variables:
+    - foo=bar
+    - biz=baz
+---
+# deprecated
+provisioner:
+  name: terraform
+  variables: foo=bar</code></pre>
+
+<h6 id="label-Default">Default</h6>
+
+<p>The default <code>variables</code> collection is empty.</p>
+
+<h3 id="label-Verifier">Verifier</h3>
+
+<p>The <a href="lib/kitchen/verifier/terraform.rb">verifier</a> is a wrapper
+around <a href="http://inspec.io">InSpec</a>. It is responsible for
+verifying the behaviour of any server instances in the Terraform state.</p>
+
+<h4 id="label-Actions">Actions</h4>
+
+<h5 id="label-kitchen+verify">kitchen verify</h5>
+
+<p>The verifier verifies the test suite&#39;s configured groups of server
+instances in the Terraform state using an <a
+href="http://inspec.io/docs/reference/profiles">InSpec profiles</a> located
+in <code>&lt;Test Kitchen working directory&gt;/test/integration/&lt;suite
+name&gt;</code>.</p>
+
+<h4 id="label-Configuration">Configuration</h4>
+
+<p>The verifier inherits from <a
+href="https://github.com/chef/kitchen-inspec/">kitchen-inspec</a> and
+should support any configuration defined by that plugin with the exception
+of the <code>port</code> and <code>username</code> configuration which are
+specified under <code>groups</code>.</p>
+
+<h5 id="label-groups">groups</h5>
+
+<p>A collection of group mappings containing <a
+href="http://inspec.io/docs/reference/dsl_inspec/">InSpec control</a> and
+connection options for the different server instance groups in the
+Terraform configuration.</p>
+
+<p>Each group consists of:</p>
+<ul><li>
+<p>a name to use for logging purposes</p>
+</li><li>
+<p>a mapping of InSpec attribute names to Terraform output variable  names to
+define for the suite&#39;s InSpec profile</p>
+</li><li>
+<p>a collection of controls to include from the suite&#39;s InSpec profile</p>
+</li><li>
+<p>a hostnames output variable name to use for extracting hostnames from  the
+Terraform state; the output value is assumed to be in CSV format</p>
+</li><li>
+<p>the port to use when connecting to the group&#39;s hosts</p>
+</li><li>
+<p>the username to use when connecting to the group&#39;s hosts</p>
+</li></ul>
+
+<h6 id="label-Example+.kitchen.yml">Example .kitchen.yml</h6>
+
+<pre class="code ruby"><code class="ruby">---
+verifier:
+  name: terraform
+  groups:
+    - name: arbitrary
+      attributes:
+        foo: bar
+      controls:
+        - biz
+      hostnames: hostnames_output
+      port: 123
+      username: test-user</code></pre>
+
+<h6 id="label-Defaults">Defaults</h6>
+
+<p>The default <code>groups</code> collection is empty.</p>
+
+<p>For each group:</p>
+<ul><li>
+<p>the default <code>attributes</code> mapping is empty</p>
+</li><li>
+<p>the default <code>controls</code> collection is empty</p>
+</li><li>
+<p>the default <code>port</code> is obtained from the transport</p>
+</li><li>
+<p>the default <code>username</code> is obtained from the transport</p>
+</li></ul>
+</div></div>
+
+      <div id="footer">
+  Generated on Mon Dec  5 23:44:18 2016 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.5 (ruby-2.3.1).
+</div>
+
+    </div>
+  </body>
+</html>

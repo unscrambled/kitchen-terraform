@@ -16,3 +16,5 @@ Style/AccessorMethodName:
     - lib/terraform/command_factory.rb
 Style/AndOr:
   Enabled: false
+Style/StringLiterals:
+  EnforcedStyle: double_quotes

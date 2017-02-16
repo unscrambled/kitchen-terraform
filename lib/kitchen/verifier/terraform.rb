@@ -14,54 +14,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'kitchen/verifier/inspec'
-require 'terraform/configurable'
-require 'terraform/groups_config'
+require "kitchen"
+require "kitchen/verifier/inspec"
+require_relative "../../terraform/configurable"
+require_relative "../terraform/config/groups"
 
-module Kitchen
-  module Verifier
-    # Runs tests post-converge to confirm that instances in the Terraform state
-    # are in an expected state
-    class Terraform < ::Kitchen::Verifier::Inspec
-      extend ::Terraform::GroupsConfig
+# Runs tests post-converge to confirm that instances in the Terraform state
+# are in an expected state
+::Kitchen::Verifier::Terraform = ::Class.new ::Kitchen::Verifier::Inspec do
+  ::Kitchen::Terraform::Config
+    .call attributes: [::Kitchen::Terraform::Config::Groups], plugin_class: self
+  include ::Terraform::Configurable
+  kitchen_verifier_api_version 2
 
-      include ::Terraform::Configurable
+  def call(state)
+    resolve_groups do |group|
+      self.group = group
+      config[:attributes] = group.attributes
+      info "Verifying #{group.description}"
+      super
+    end
+  rescue ::Kitchen::StandardError, ::SystemCallError => error
+    raise ::Kitchen::ActionFailed, error.message
+  end
 
-      kitchen_verifier_api_version 2
+  private
 
-      def call(state)
-        resolve_groups do |group|
-          self.group = group
-          config[:attributes] = group.attributes
-          info "Verifying #{group.description}"
-          super
-        end
-      rescue ::Kitchen::StandardError, ::SystemCallError => error
-        raise ::Kitchen::ActionFailed, error.message
-      end
+  attr_accessor :group
 
-      private
+  def configure_backend(options:)
+    /(local)host/.match group.hostname do |match|
+      options.merge! "backend" => match[1]
+    end
+  end
 
-      attr_accessor :group
+  def resolve_groups(&block)
+    config[:groups]
+      .each { |group| group.resolve client: silent_client, &block }
+  end
 
-      def configure_backend(options:)
-        /(local)host/.match group.hostname do |match|
-          options.merge! 'backend' => match[1]
-        end
-      end
-
-      def resolve_groups(&block)
-        config[:groups]
-          .each { |group| group.resolve client: silent_client, &block }
-      end
-
-      def runner_options(transport, state = {}, platform = nil, suite = nil)
-        super.tap do |options|
-          options.merge! controls: group.controls, 'host' => group.hostname,
-                         'port' => group.port, 'user' => group.username
-          configure_backend options: options
-        end
-      end
+  def runner_options(transport, state = {}, platform = nil, suite = nil)
+    super.tap do |options|
+      options.merge! controls: group.controls, "host" => group.hostname,
+                     "port" => group.port, "user" => group.username
+      configure_backend options: options
     end
   end
 end

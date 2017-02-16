@@ -4,7 +4,7 @@
   $LOAD_PATH.unshift directory unless $LOAD_PATH.include? directory
 end
 
-require 'terraform/project_version.rb'
+require "kitchen/terraform/version.rb"
 
 ::Gem::Specification.new do |specification|
   specification.authors = [
@@ -19,7 +19,7 @@ require 'terraform/project_version.rb'
 
   specification.summary = 'Test Kitchen plugins for testing Terraform projects'
 
-  specification.version = ::Terraform::PROJECT_VERSION
+  specification.version = ::Kitchen::Terraform::Version
 
   specification.email = 'kitchen-terraform@newcontext.com'
 
@@ -54,13 +54,29 @@ require 'terraform/project_version.rb'
 
   specification.add_development_dependency 'travis', '~> 1.8'
 
+  specification.add_runtime_dependency 'dry-types', '~> 0.9'
+
+  specification.add_runtime_dependency 'dry-validation', '~> 0.10'
+
   specification.add_runtime_dependency 'inspec', '~> 1.0'
 
   specification.add_runtime_dependency 'kitchen-inspec', '~> 0.14', '>= 0.14.0'
 
   specification.add_runtime_dependency 'mixlib-shellout', '~> 2.2', '>= 2.2.6'
 
+  specification.add_runtime_dependency 'pipetree', '~> 0.1'
+
+  specification.add_runtime_dependency 'ptools', '~> 1.3'
+
+  specification.add_runtime_dependency 'reform', '~> 2.2'
+
   specification.add_runtime_dependency 'test-kitchen', '~> 1.10', '>= 1.10.0'
+
+  specification.add_runtime_dependency 'trailblazer', '~> 2.0'
+
+  specification.add_runtime_dependency 'trailblazer-cells', '~> 0.0.3'
+
+  specification.add_runtime_dependency 'uber', '~> 0.1'
 
   specification.cert_chain = ['certs/public_cert.pem']
 

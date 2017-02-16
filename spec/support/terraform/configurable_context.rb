@@ -14,13 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'kitchen'
-require 'kitchen/driver/terraform'
-require 'kitchen/provisioner/terraform'
-require 'kitchen/verifier/terraform'
-require 'terraform/configurable'
+require "kitchen"
+require "kitchen/driver/terraform"
+require "kitchen/provisioner/terraform"
+require "kitchen/verifier/terraform"
+require "terraform/configurable"
 
-::RSpec.shared_context 'client' do |client_type: :client|
+::RSpec.shared_context "client" do |client_type: :client|
   let(client_type) { instance_double ::Terraform::Client }
 
   before do
@@ -29,7 +29,7 @@ require 'terraform/configurable'
   end
 end
 
-::RSpec.shared_context 'instance' do
+::RSpec.shared_context "instance" do
   let(:default_config) { { kitchen_root: kitchen_root } }
 
   let(:driver) { ::Kitchen::Driver::Terraform.new default_config }
@@ -41,17 +41,17 @@ end
                             verifier: verifier
   end
 
-  let(:kitchen_root) { '/kitchen/root' }
+  let(:kitchen_root) { "/kitchen/root" }
 
   let(:logger) { ::Kitchen::Logger.new }
 
-  let(:platform) { ::Kitchen::Platform.new name: 'platform' }
+  let(:platform) { ::Kitchen::Platform.new name: "platform" }
 
   let :provisioner do
     ::Kitchen::Provisioner::Terraform.new default_config
   end
 
-  let(:suite) { ::Kitchen::Suite.new name: 'suite' }
+  let(:suite) { ::Kitchen::Suite.new name: "suite" }
 
   let(:transport) { ::Kitchen::Transport::Ssh.new }
 
@@ -60,10 +60,10 @@ end
   before { instance }
 end
 
-::RSpec.shared_context 'limited_client' do
-  include_context 'client', client_type: :limited_client
+::RSpec.shared_context "limited_client" do
+  include_context "client", client_type: :limited_client
 end
 
-::RSpec.shared_context 'silent_client' do
-  include_context 'client', client_type: :silent_client
+::RSpec.shared_context "silent_client" do
+  include_context "client", client_type: :silent_client
 end

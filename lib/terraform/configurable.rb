@@ -14,24 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'forwardable'
-require 'kitchen'
-require 'pathname'
-require 'terraform/client'
-require 'terraform/debug_logger'
-require 'terraform/project_version'
+require "forwardable"
+require "kitchen"
+require "kitchen/terraform/debug_logger"
+require_relative "../kitchen/terraform/version"
 
 module Terraform
   # Behaviour for objects that extend ::Kitchen::Configurable
   module Configurable
     extend ::Forwardable
 
-    def_delegator :config, :[]=
-
     def_delegators :instance, :driver, :provisioner, :transport
 
     def self.included(configurable_class)
-      configurable_class.plugin_version ::Terraform::PROJECT_VERSION
+      configurable_class.plugin_version ::Kitchen::Terraform::Version
     end
 
     def client
@@ -49,12 +45,12 @@ module Terraform
     end
 
     def debug_logger
-      ::Terraform::DebugLogger.new logger: logger
+      ::Kitchen::Terraform::DebugLogger.new logger
     end
 
     def instance_pathname(filename:)
-      ::Pathname.new(config[:kitchen_root])
-                .join '.kitchen', 'kitchen-terraform', instance.name, filename
+      ::File.join config[:kitchen_root], ".kitchen", "kitchen-terraform",
+                  instance.name, filename
     end
 
     def limited_client
@@ -62,7 +58,7 @@ module Terraform
     end
 
     def log_deprecation(aspect:, remediation:)
-      logger.warn 'DEPRECATION NOTICE'
+      logger.warn "DEPRECATION NOTICE"
       logger
         .warn "Support for #{aspect} will be dropped in kitchen-terraform v1.0"
       logger.warn remediation

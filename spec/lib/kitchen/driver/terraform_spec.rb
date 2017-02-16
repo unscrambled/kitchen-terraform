@@ -14,80 +14,107 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'kitchen/driver/terraform'
-require 'support/raise_error_examples'
-require 'support/terraform/configurable_context'
-require 'support/terraform/configurable_examples'
+require "kitchen/driver/terraform"
+require "support/kitchen/terraform/config/apply_timeout_examples"
+require "support/kitchen/terraform/config/client_examples"
+require "support/kitchen/terraform/config/color_examples"
+require "support/kitchen/terraform/config/directory_examples"
+require "support/kitchen/terraform/config/parallelism_examples"
+require "support/kitchen/terraform/config/plan_examples"
+require "support/kitchen/terraform/config/state_examples"
+require "support/kitchen/terraform/config/variable_files_examples"
+require "support/kitchen/terraform/config/variables_examples"
+require "support/raise_error_examples"
+require "support/terraform/configurable_context"
+require "support/terraform/configurable_examples"
 
 ::RSpec.describe ::Kitchen::Driver::Terraform do
-  include_context 'instance'
+  include_context "instance"
 
   let(:described_instance) { driver }
 
+  it_behaves_like ::Kitchen::Terraform::Config::ApplyTimeout
+
+  it_behaves_like ::Kitchen::Terraform::Config::Client
+
+  it_behaves_like ::Kitchen::Terraform::Config::Color
+
+  it_behaves_like ::Kitchen::Terraform::Config::Directory
+
+  it_behaves_like ::Kitchen::Terraform::Config::Parallelism
+
+  it_behaves_like ::Kitchen::Terraform::Config::Plan
+
+  it_behaves_like ::Kitchen::Terraform::Config::State
+
+  it_behaves_like ::Kitchen::Terraform::Config::VariableFiles
+
+  it_behaves_like ::Kitchen::Terraform::Config::Variables
+
   it_behaves_like ::Terraform::Configurable
 
-  describe '.serial_actions' do
+  describe ".serial_actions" do
     subject(:serial_actions) { described_class.serial_actions }
 
-    it('is empty') { is_expected.to be_empty }
+    it("is empty") { is_expected.to be_empty }
   end
 
-  describe '#destroy' do
-    include_context 'client'
+  describe "#destroy" do
+    include_context "client"
 
-    include_context 'silent_client'
+    include_context "silent_client"
 
     let :allow_load_state do
       allow(silent_client).to receive(:load_state).with(no_args)
     end
 
-    context 'when a state does exist' do
+    context "when a state does exist" do
       before { allow_load_state.and_yield }
 
       after { described_instance.destroy }
 
       subject { client }
 
-      it 'applies destructively' do
+      it "applies destructively" do
         is_expected.to receive(:apply_destructively).with no_args
       end
     end
 
-    context 'when a state does not exist' do
-      before { allow_load_state.and_raise ::Errno::ENOENT, 'state file' }
+    context "when a state does not exist" do
+      before { allow_load_state.and_raise ::Errno::ENOENT, "state file" }
 
       after { described_instance.destroy }
 
       subject { described_instance }
 
-      it 'logs a debug message' do
+      it "logs a debug message" do
         is_expected.to receive(:debug).with(/state file/)
       end
     end
 
-    context 'when a command fails' do
-      before { allow_load_state.and_raise ::SystemCallError, 'system call' }
+    context "when a command fails" do
+      before { allow_load_state.and_raise ::SystemCallError, "system call" }
 
       subject { proc { described_instance.destroy } }
 
-      it 'raises an action failed error' do
+      it "raises an action failed error" do
         is_expected.to raise_error ::Kitchen::ActionFailed, /system call/
       end
     end
   end
 
-  describe '#verify_dependencies' do
-    include_context 'limited_client'
+  describe "#verify_dependencies" do
+    include_context "limited_client"
 
     before do
       allow(limited_client).to receive(:version).with(no_args)
         .and_return ::Terraform::Version.create value: version
     end
 
-    context 'when the Terraform version is not supported' do
-      let(:version) { '0.9' }
+    context "when the Terraform version is not supported" do
+      let(:version) { "0.9" }
 
-      it_behaves_like 'a user error has occurred' do
+      it_behaves_like "a user error has occurred" do
         let(:described_method) { described_instance.verify_dependencies }
 
         let :message do
@@ -96,16 +123,16 @@ require 'support/terraform/configurable_examples'
       end
     end
 
-    context 'when the Terraform version is deprecated' do
-      let(:version) { '0.6' }
+    context "when the Terraform version is deprecated" do
+      let(:version) { "0.6" }
 
       after { described_instance.verify_dependencies }
 
       subject { described_instance }
 
-      it 'logs a deprecation' do
+      it "logs a deprecation" do
         is_expected.to receive(:log_deprecation)
-          .with aspect: 'Terraform v0.6', remediation: 'Install Terraform v0.8'
+          .with aspect: "Terraform v0.6", remediation: "Install Terraform v0.8"
       end
     end
   end

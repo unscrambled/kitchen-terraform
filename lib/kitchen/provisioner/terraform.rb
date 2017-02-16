@@ -14,43 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'kitchen'
-require 'terraform/apply_timeout_config'
-require 'terraform/color_config'
-require 'terraform/configurable'
-require 'terraform/directory_config'
-require 'terraform/file_configs'
-require 'terraform/parallelism_config'
-require 'terraform/variable_files_config'
-require 'terraform/variables_config'
+require "kitchen"
+require_relative "../../terraform/configurable"
 
-module Kitchen
-  module Provisioner
-    # Applies constructive Terraform plans
-    class Terraform < ::Kitchen::Provisioner::Base
-      extend ::Terraform::ApplyTimeoutConfig
+# Applies constructive Terraform plans
+::Kitchen::Provisioner::Terraform = ::Class.new ::Kitchen::Provisioner::Base do
+  include ::Terraform::Configurable
 
-      extend ::Terraform::ColorConfig
+  kitchen_provisioner_api_version 2
 
-      extend ::Terraform::DirectoryConfig
-
-      extend ::Terraform::FileConfigs
-
-      extend ::Terraform::ParallelismConfig
-
-      extend ::Terraform::VariableFilesConfig
-
-      extend ::Terraform::VariablesConfig
-
-      include ::Terraform::Configurable
-
-      kitchen_provisioner_api_version 2
-
-      def call(_state = nil)
-        client.apply_constructively
-      rescue ::Kitchen::StandardError, ::SystemCallError => error
-        raise ::Kitchen::ActionFailed, error.message
-      end
-    end
+  def call(_state = nil)
+    client.plan_and_apply
+  rescue ::Kitchen::StandardError, ::SystemCallError => error
+    raise ::Kitchen::ActionFailed, error.message
   end
 end

@@ -1,0 +1,4 @@
+---
+en:
+  errors:
+    supported_version?: "must be 0.7.X or 0.8.X"

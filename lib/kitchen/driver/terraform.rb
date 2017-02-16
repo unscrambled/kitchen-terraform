@@ -14,59 +14,65 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'kitchen'
-require 'terraform/configurable'
-require 'terraform/version'
+require "kitchen"
+require_relative "../../terraform/configurable"
+require_relative "../terraform/config/client"
+require_relative "../terraform/config/color"
+require_relative "../terraform/config/directory"
+require_relative "../terraform/config/parallelism"
+require_relative "../terraform/config/plan"
+require_relative "../terraform/config/state"
+require_relative "../terraform/config/timeout"
+require_relative "../terraform/config/variable_files"
+require_relative "../terraform/config/variables"
+require_relative "../terraform/debug_logger"
 
-module Kitchen
-  module Driver
-    # Terraform state lifecycle activities manager
-    class Terraform < ::Kitchen::Driver::Base
-      include ::Terraform::Configurable
+# Terraform state lifecycle activities manager
+::Kitchen::Driver::Terraform = ::Class.new ::Kitchen::Driver::Base do
+  ::Kitchen::Terraform::Config.call attributes: [
+    ::Kitchen::Terraform::Config::Client,
+    ::Kitchen::Terraform::Config::Color,
+    ::Kitchen::Terraform::Config::Directory,
+    ::Kitchen::Terraform::Config::Parallelism,
+    ::Kitchen::Terraform::Config::Plan,
+    ::Kitchen::Terraform::Config::State,
+    ::Kitchen::Terraform::Config::Timeout,
+    ::Kitchen::Terraform::Config::VariableFiles,
+    ::Kitchen::Terraform::Config::Variables
+  ], plugin_class: self
 
-      kitchen_driver_api_version 2
+  include ::Terraform::Configurable
 
-      no_parallel_for
+  kitchen_driver_api_version 2
 
-      def create(_state = nil); end
+  no_parallel_for
 
-      def destroy(_state = nil)
-        load_state { client.apply_destructively }
-      rescue ::Kitchen::StandardError, ::SystemCallError => error
-        raise ::Kitchen::ActionFailed, error.message
-      end
+  def create(_state = nil)
+    ::Kitchen::Driver::Terraform::Create
+      .call config, "logger" => logger, "timeout" => config[:timeout]
+  rescue => error
+    raise ::Kitchen::ActionFailed, error.message
+  end
 
-      def verify_dependencies
-        verify_supported_version
-        check_deprecated_version
-      end
+  def destroy(_state = nil)
+    load_state { client.plan_and_apply destroy: true }
+  rescue ::Kitchen::StandardError, ::SystemCallError => error
+    raise ::Kitchen::ActionFailed, error.message
+  end
 
-      private
+  def verify_dependencies
+    ::Kitchen::Driver::Terraform::VerifyDependencies.call(
+      "logger" => ::Kitchen::Terraform::DebugLogger.new(logger)
+    )["result.kitchen.terraform.callback"].call
+  end
 
-      def check_deprecated_version
-        version.if_deprecated do
-          log_deprecation aspect: version.to_s,
-                          remediation: "Install #{::Terraform::Version.latest}"
-        end
-      end
+  private
 
-      def load_state(&block)
-        silent_client.load_state(&block)
-      rescue ::Errno::ENOENT => error
-        debug error.message
-      end
-
-      def verify_supported_version
-        version.if_not_supported do
-          raise ::Kitchen::UserError,
-                "#{version} is not supported\nInstall " \
-                  "#{::Terraform::Version.latest}"
-        end
-      end
-
-      def version
-        @version ||= limited_client.version
-      end
-    end
+  def load_state(&block)
+    silent_client.load_state(&block)
+  rescue ::Errno::ENOENT => error
+    debug error.message
   end
 end
+
+require_relative "terraform/verify_dependencies"
