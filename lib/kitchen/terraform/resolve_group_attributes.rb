@@ -14,23 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'pathname'
-require 'terraform/prepare_input_file'
-require 'terraform/plan_command'
+require "kitchen/terraform"
 
-module Terraform
-  # A command to plan a destructive execution
-  class DestructivePlanCommand < ::Terraform::PlanCommand
-    def name
-      'plan'
-    end
-
-    private
-
-    def initialize(target: '')
-      super
-      preparations.push ::Terraform::PrepareInputFile
-        .new file: ::Pathname.new(options.state)
+::Kitchen::Terraform::ResolveGroupAttributes = ::Module.new do
+  define_singleton_method :call do |attributes:, client:, state:, &block|
+    ::Hash.new.tap do |resolved_attributes|
+      resolved_attributes.store "terraform_state", state
+      client.each_output_name do |output_name|
+        resolved_attributes.store output_name, client.output(name: output_name)
+      end
+      attributes.each_pair do |attribute_name, output_name|
+        resolved_attributes
+          .store attribute_name.to_s, client.output(name: output_name)
+      end
+      block.call resolved_attributes
     end
   end
 end

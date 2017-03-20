@@ -14,23 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'pathname'
-require 'terraform/prepare_input_file'
-require 'terraform/plan_command'
+require "kitchen/terraform"
 
-module Terraform
-  # A command to plan a destructive execution
-  class DestructivePlanCommand < ::Terraform::PlanCommand
-    def name
-      'plan'
+::Kitchen::Terraform::GroupHostnamesResolver = ::Class.new do
+  define_method :resolve do |client:, hostnames:, &block|
+    hostnames.scan /^\s*$/ do
+      block.call "localhost"
+      return
     end
-
-    private
-
-    def initialize(target: '')
-      super
-      preparations.push ::Terraform::PrepareInputFile
-        .new file: ::Pathname.new(options.state)
-    end
+    client.iterate_output name: hostnames, &block
   end
 end

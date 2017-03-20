@@ -16,21 +16,30 @@
 
 require 'inspec'
 require 'kitchen/verifier/terraform'
+require 'support/kitchen/config/groups_examples'
+require 'support/kitchen/instance_context'
 require 'support/terraform/configurable_context'
 require 'support/terraform/configurable_examples'
-require 'support/terraform/groups_config_examples'
 
 ::RSpec.describe ::Kitchen::Verifier::Terraform do
-  include_context 'instance'
+  it_behaves_like ::Terraform::Configurable do
+    include_context 'instance'
 
-  let(:described_instance) { verifier }
+    let(:described_instance) { verifier }
+  end
 
-  it_behaves_like ::Terraform::Configurable
-
-  it_behaves_like ::Terraform::GroupsConfig
+  it_behaves_like ::Kitchen::Config::Groups do
+    include_context ::Kitchen::Instance do
+      let(:verifier) { described_instance }
+    end
+  end
 
   describe '#call(state)' do
+    include_context 'instance'
+
     include_context 'silent_client'
+
+    let(:described_instance) { verifier }
 
     let :resolved_group do
       unresolved_group

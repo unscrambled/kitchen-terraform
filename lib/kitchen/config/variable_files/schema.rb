@@ -14,23 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'pathname'
-require 'terraform/prepare_input_file'
-require 'terraform/plan_command'
+require 'dry-validation'
+require 'kitchen/config/variable_files'
 
-module Terraform
-  # A command to plan a destructive execution
-  class DestructivePlanCommand < ::Terraform::PlanCommand
-    def name
-      'plan'
-    end
-
-    private
-
-    def initialize(target: '')
-      super
-      preparations.push ::Terraform::PrepareInputFile
-        .new file: ::Pathname.new(options.state)
-    end
-  end
-end
+::Kitchen::Config::VariableFiles::Schema =
+  ::Dry::Validation.Schema { required(:value).each :filled?, :str? }

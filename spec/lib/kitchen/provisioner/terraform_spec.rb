@@ -15,39 +15,53 @@
 # limitations under the License.
 
 require 'kitchen/provisioner/terraform'
-require 'support/terraform/apply_timeout_config_examples'
-require 'support/terraform/color_config_examples'
+require 'support/kitchen/config/apply_timeout_examples'
+require 'support/kitchen/config/color_examples'
+require 'support/kitchen/config/directory_examples'
+require 'support/kitchen/config/parallelism_examples'
+require 'support/kitchen/config/plan_examples'
+require 'support/kitchen/config/state_examples'
+require 'support/kitchen/config/variable_files_examples'
+require 'support/kitchen/config/variables_examples'
+require 'support/kitchen/instance_context'
 require 'support/terraform/configurable_context'
 require 'support/terraform/configurable_examples'
-require 'support/terraform/directory_config_examples'
-require 'support/terraform/file_configs_examples'
-require 'support/terraform/parallelism_config_examples'
-require 'support/terraform/variable_files_config_examples'
-require 'support/terraform/variables_config_examples'
 
 ::RSpec.describe ::Kitchen::Provisioner::Terraform do
-  include_context 'instance'
+  shared_context 'plugin' do
+    include_context ::Kitchen::Instance do
+      let(:provisioner) { described_instance }
+    end
+  end
 
-  let(:described_instance) { provisioner }
+  it_behaves_like(::Kitchen::Config::ApplyTimeout) { include_context 'plugin' }
 
-  it_behaves_like ::Terraform::ApplyTimeoutConfig
+  it_behaves_like(::Kitchen::Config::Color) { include_context 'plugin' }
 
-  it_behaves_like ::Terraform::ColorConfig
+  it_behaves_like(::Kitchen::Config::Directory) { include_context 'plugin' }
 
-  it_behaves_like ::Terraform::Configurable
+  it_behaves_like(::Kitchen::Config::Parallelism) { include_context 'plugin' }
 
-  it_behaves_like ::Terraform::DirectoryConfig
+  it_behaves_like(::Kitchen::Config::Plan) { include_context 'plugin' }
 
-  it_behaves_like ::Terraform::FileConfigs
+  it_behaves_like(::Kitchen::Config::State) { include_context 'plugin' }
 
-  it_behaves_like ::Terraform::ParallelismConfig
+  it_behaves_like(::Kitchen::Config::VariableFiles) { include_context 'plugin' }
 
-  it_behaves_like ::Terraform::VariableFilesConfig
+  it_behaves_like(::Kitchen::Config::Variables) { include_context 'plugin' }
 
-  it_behaves_like ::Terraform::VariablesConfig
+  it_behaves_like ::Terraform::Configurable do
+    include_context 'instance'
+
+    let(:described_instance) { provisioner }
+  end
 
   describe '#call(_state = nil)' do
     include_context 'client'
+
+    include_context 'instance'
+
+    let(:described_instance) { provisioner }
 
     context 'when all commands do not fail' do
       after { described_instance.call }

@@ -14,23 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'pathname'
-require 'terraform/prepare_input_file'
-require 'terraform/plan_command'
+require "kitchen"
 
-module Terraform
-  # A command to plan a destructive execution
-  class DestructivePlanCommand < ::Terraform::PlanCommand
-    def name
-      'plan'
+::Kitchen::Config::ApplyTimeout = ::Module.new do
+  define_singleton_method :call do |plugin_class:|
+    require "kitchen/config/apply_timeout/schema"
+
+    plugin_class.required_config :apply_timeout do |attribute, value, plugin|
+      ::Kitchen::Config::ApplyTimeout::Schema
+        .call(value: value).messages.tap do |messages|
+          raise ::Kitchen::UserError,
+                "#{plugin.class} configuration: #{attribute} #{messages}" unless
+                  messages.empty?
+        end
     end
-
-    private
-
-    def initialize(target: '')
-      super
-      preparations.push ::Terraform::PrepareInputFile
-        .new file: ::Pathname.new(options.state)
-    end
+    plugin_class.default_config :apply_timeout, 600
   end
 end

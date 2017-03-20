@@ -14,23 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'pathname'
-require 'terraform/prepare_input_file'
-require 'terraform/plan_command'
+require "kitchen"
 
-module Terraform
-  # A command to plan a destructive execution
-  class DestructivePlanCommand < ::Terraform::PlanCommand
-    def name
-      'plan'
+::Kitchen::Config::Directory = ::Module.new do
+  define_singleton_method :call do |plugin_class:|
+    require "kitchen/config/directory/schema"
+
+    plugin_class.required_config :directory do |attribute, value, plugin|
+      ::Kitchen::Config::Directory::Schema
+        .call(value: value).messages.tap do |messages|
+          raise ::Kitchen::UserError,
+                "#{plugin.class} configuration: #{attribute} #{messages}" unless
+                  messages.empty?
+        end
     end
-
-    private
-
-    def initialize(target: '')
-      super
-      preparations.push ::Terraform::PrepareInputFile
-        .new file: ::Pathname.new(options.state)
-    end
+    plugin_class.default_config :directory do |plugin| plugin[:kitchen_root] end
   end
 end
