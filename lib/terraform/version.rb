@@ -35,7 +35,7 @@ module Terraform
     end
 
     def self.latest
-      new value: '0.8'
+      new value: '0.9'
     end
 
     def self.supported
